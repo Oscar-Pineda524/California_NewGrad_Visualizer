@@ -1,0 +1,59 @@
+county,state,county_fips,fred_series_id,series_title,source_url
+Alameda County,CA,06001,DP04ACS006001,"Burdened Households (5-year estimate) in Alameda County, CA",https://fredaccount.stlouisfed.org/public/datalist/10679
+Alpine County,CA,06003,DP04ACS006003,"Burdened Households (5-year estimate) in Alpine County, CA",https://fredaccount.stlouisfed.org/public/datalist/10679
+Amador County,CA,06005,DP04ACS006005,"Burdened Households (5-year estimate) in Amador County, CA",https://fredaccount.stlouisfed.org/public/datalist/10679
+Butte County,CA,06007,DP04ACS006007,"Burdened Households (5-year estimate) in Butte County, CA",https://fredaccount.stlouisfed.org/public/datalist/10679
+Calaveras County,CA,06009,DP04ACS006009,"Burdened Households (5-year estimate) in Calaveras County, CA",https://fredaccount.stlouisfed.org/public/datalist/10679
+Colusa County,CA,06011,DP04ACS006011,"Burdened Households (5-year estimate) in Colusa County, CA",https://fredaccount.stlouisfed.org/public/datalist/10679
+Contra Costa County,CA,06013,DP04ACS006013,"Burdened Households (5-year estimate) in Contra Costa County, CA",https://fredaccount.stlouisfed.org/public/datalist/10679
+Del Norte County,CA,06015,DP04ACS006015,"Burdened Households (5-year estimate) in Del Norte County, CA",https://fredaccount.stlouisfed.org/public/datalist/10679
+El Dorado County,CA,06017,DP04ACS006017,"Burdened Households (5-year estimate) in El Dorado County, CA",https://fredaccount.stlouisfed.org/public/datalist/10679
+Fresno County,CA,06019,DP04ACS006019,"Burdened Households (5-year estimate) in Fresno County, CA",https://fredaccount.stlouisfed.org/public/datalist/10679
+Glenn County,CA,06021,DP04ACS006021,"Burdened Households (5-year estimate) in Glenn County, CA",https://fredaccount.stlouisfed.org/public/datalist/10679
+Humboldt County,CA,06023,DP04ACS006023,"Burdened Households (5-year estimate) in Humboldt County, CA",https://fredaccount.stlouisfed.org/public/datalist/10679
+Imperial County,CA,06025,DP04ACS006025,"Burdened Households (5-year estimate) in Imperial County, CA",https://fredaccount.stlouisfed.org/public/datalist/10679
+Inyo County,CA,06027,DP04ACS006027,"Burdened Households (5-year estimate) in Inyo County, CA",https://fredaccount.stlouisfed.org/public/datalist/10679
+Kern County,CA,06029,DP04ACS006029,"Burdened Households (5-year estimate) in Kern County, CA",https://fredaccount.stlouisfed.org/public/datalist/10679
+Kings County,CA,06031,DP04ACS006031,"Burdened Households (5-year estimate) in Kings County, CA",https://fredaccount.stlouisfed.org/public/datalist/10679
+Lake County,CA,06033,DP04ACS006033,"Burdened Households (5-year estimate) in Lake County, CA",https://fredaccount.stlouisfed.org/public/datalist/10679
+Lassen County,CA,06035,DP04ACS006035,"Burdened Households (5-year estimate) in Lassen County, CA",https://fredaccount.stlouisfed.org/public/datalist/10679
+Los Angeles County,CA,06037,DP04ACS006037,"Burdened Households (5-year estimate) in Los Angeles County, CA",https://fredaccount.stlouisfed.org/public/datalist/10679
+Madera County,CA,06039,DP04ACS006039,"Burdened Households (5-year estimate) in Madera County, CA",https://fredaccount.stlouisfed.org/public/datalist/10679
+Marin County,CA,06041,DP04ACS006041,"Burdened Households (5-year estimate) in Marin County, CA",https://fredaccount.stlouisfed.org/public/datalist/10679
+Mariposa County,CA,06043,DP04ACS006043,"Burdened Households (5-year estimate) in Mariposa County, CA",https://fredaccount.stlouisfed.org/public/datalist/10679
+Mendocino County,CA,06045,DP04ACS006045,"Burdened Households (5-year estimate) in Mendocino County, CA",https://fredaccount.stlouisfed.org/public/datalist/10679
+Merced County,CA,06047,DP04ACS006047,"Burdened Households (5-year estimate) in Merced County, CA",https://fredaccount.stlouisfed.org/public/datalist/10679
+Modoc County,CA,06049,DP04ACS006049,"Burdened Households (5-year estimate) in Modoc County, CA",https://fredaccount.stlouisfed.org/public/datalist/10679
+Mono County,CA,06051,DP04ACS006051,"Burdened Households (5-year estimate) in Mono County, CA",https://fredaccount.stlouisfed.org/public/datalist/10679
+Monterey County,CA,06053,DP04ACS006053,"Burdened Households (5-year estimate) in Monterey County, CA",https://fredaccount.stlouisfed.org/public/datalist/10679
+Napa County,CA,06055,DP04ACS006055,"Burdened Households (5-year estimate) in Napa County, CA",https://fredaccount.stlouisfed.org/public/datalist/10679
+Nevada County,CA,06057,DP04ACS006057,"Burdened Households (5-year estimate) in Nevada County, CA",https://fredaccount.stlouisfed.org/public/datalist/10679
+Orange County,CA,06059,DP04ACS006059,"Burdened Households (5-year estimate) in Orange County, CA",https://fredaccount.stlouisfed.org/public/datalist/10679
+Placer County,CA,06061,DP04ACS006061,"Burdened Households (5-year estimate) in Placer County, CA",https://fredaccount.stlouisfed.org/public/datalist/10679
+Plumas County,CA,06063,DP04ACS006063,"Burdened Households (5-year estimate) in Plumas County, CA",https://fredaccount.stlouisfed.org/public/datalist/10679
+Riverside County,CA,06065,DP04ACS006065,"Burdened Households (5-year estimate) in Riverside County, CA",https://fredaccount.stlouisfed.org/public/datalist/10679
+Sacramento County,CA,06067,DP04ACS006067,"Burdened Households (5-year estimate) in Sacramento County, CA",https://fredaccount.stlouisfed.org/public/datalist/10679
+San Benito County,CA,06069,DP04ACS006069,"Burdened Households (5-year estimate) in San Benito County, CA",https://fredaccount.stlouisfed.org/public/datalist/10679
+San Bernardino County,CA,06071,DP04ACS006071,"Burdened Households (5-year estimate) in San Bernardino County, CA",https://fredaccount.stlouisfed.org/public/datalist/10679
+San Diego County,CA,06073,DP04ACS006073,"Burdened Households (5-year estimate) in San Diego County, CA",https://fredaccount.stlouisfed.org/public/datalist/10679
+San Francisco County,CA,06075,DP04ACS006075,"Burdened Households (5-year estimate) in San Francisco County, CA",https://fredaccount.stlouisfed.org/public/datalist/10679
+San Joaquin County,CA,06077,DP04ACS006077,"Burdened Households (5-year estimate) in San Joaquin County, CA",https://fredaccount.stlouisfed.org/public/datalist/10679
+San Luis Obispo County,CA,06079,DP04ACS006079,"Burdened Households (5-year estimate) in San Luis Obispo County, CA",https://fredaccount.stlouisfed.org/public/datalist/10679
+San Mateo County,CA,06081,DP04ACS006081,"Burdened Households (5-year estimate) in San Mateo County, CA",https://fredaccount.stlouisfed.org/public/datalist/10679
+Santa Barbara County,CA,06083,DP04ACS006083,"Burdened Households (5-year estimate) in Santa Barbara County, CA",https://fredaccount.stlouisfed.org/public/datalist/10679
+Santa Clara County,CA,06085,DP04ACS006085,"Burdened Households (5-year estimate) in Santa Clara County, CA",https://fredaccount.stlouisfed.org/public/datalist/10679
+Santa Cruz County,CA,06087,DP04ACS006087,"Burdened Households (5-year estimate) in Santa Cruz County, CA",https://fredaccount.stlouisfed.org/public/datalist/10679
+Shasta County,CA,06089,DP04ACS006089,"Burdened Households (5-year estimate) in Shasta County, CA",https://fredaccount.stlouisfed.org/public/datalist/10679
+Sierra County,CA,06091,DP04ACS006091,"Burdened Households (5-year estimate) in Sierra County, CA",https://fredaccount.stlouisfed.org/public/datalist/10679
+Siskiyou County,CA,06093,DP04ACS006093,"Burdened Households (5-year estimate) in Siskiyou County, CA",https://fredaccount.stlouisfed.org/public/datalist/10679
+Solano County,CA,06095,DP04ACS006095,"Burdened Households (5-year estimate) in Solano County, CA",https://fredaccount.stlouisfed.org/public/datalist/10679
+Sonoma County,CA,06097,DP04ACS006097,"Burdened Households (5-year estimate) in Sonoma County, CA",https://fredaccount.stlouisfed.org/public/datalist/10679
+Stanislaus County,CA,06099,DP04ACS006099,"Burdened Households (5-year estimate) in Stanislaus County, CA",https://fredaccount.stlouisfed.org/public/datalist/10679
+Sutter County,CA,06101,DP04ACS006101,"Burdened Households (5-year estimate) in Sutter County, CA",https://fredaccount.stlouisfed.org/public/datalist/10679
+Tehama County,CA,06103,DP04ACS006103,"Burdened Households (5-year estimate) in Tehama County, CA",https://fredaccount.stlouisfed.org/public/datalist/10679
+Trinity County,CA,06105,DP04ACS006105,"Burdened Households (5-year estimate) in Trinity County, CA",https://fredaccount.stlouisfed.org/public/datalist/10679
+Tulare County,CA,06107,DP04ACS006107,"Burdened Households (5-year estimate) in Tulare County, CA",https://fredaccount.stlouisfed.org/public/datalist/10679
+Tuolumne County,CA,06109,DP04ACS006109,"Burdened Households (5-year estimate) in Tuolumne County, CA",https://fredaccount.stlouisfed.org/public/datalist/10679
+Ventura County,CA,06111,DP04ACS006111,"Burdened Households (5-year estimate) in Ventura County, CA",https://fredaccount.stlouisfed.org/public/datalist/10679
+Yolo County,CA,06113,DP04ACS006113,"Burdened Households (5-year estimate) in Yolo County, CA",https://fredaccount.stlouisfed.org/public/datalist/10679
+Yuba County,CA,06115,DP04ACS006115,"Burdened Households (5-year estimate) in Yuba County, CA",https://fredaccount.stlouisfed.org/public/datalist/10679

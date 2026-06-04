@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>California New Grad Affordability Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="hero">
+    <p class="eyebrow">Interactive D3 Dashboard</p>
+    <h1>California New Grad Affordability Map</h1>
+    <p class="description">
+      Explore how affordable each California county may feel for a new graduate
+      based on median gross rent as a share of typical monthly occupation income.
+    </p>
+  </header>
+
+  <main class="dashboard">
+    <section class="controls" aria-label="Dashboard controls">
+      <div class="control-card">
+        <label for="occupation-group-select">Occupation group</label>
+        <select id="occupation-group-select">
+          <option value="">Loading occupation groups...</option>
+        </select>
+      </div>
+    </section>
+
+    <section class="content-grid">
+      <section class="card map-card" aria-labelledby="map-title">
+        <div class="card-header">
+          <div>
+            <h2 id="map-title">County Affordability</h2>
+            <p>Hover or click a county to inspect rent-to-income details.</p>
+          </div>
+        </div>
+
+        <div id="map-container">
+          <svg id="county-map" role="img" aria-label="Choropleth map of California counties"></svg>
+        </div>
+
+        <div id="legend" aria-label="Affordability legend"></div>
+      </section>
+
+      <aside id="detail-panel" class="card detail-panel" aria-live="polite">
+        <p class="eyebrow">County Details</p>
+        <h2>Select a County</h2>
+        <p>
+          County affordability details will appear here using median rent as a
+          share of typical monthly occupation income.
+        </p>
+      </aside>
+    </section>
+  </main>
+
+  <!-- D3 powers the data loading, map, colors, legend, and interactions. -->
+  <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+  <!-- TopoJSON converts the US Atlas county file into GeoJSON features D3 can draw. -->
+  <script src="https://cdn.jsdelivr.net/npm/topojson-client@3"></script>
+  <!-- SheetJS parses the local OEWS .xlsx wage/employment workbooks in the browser. -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="main.js"></script>
+</body>
+</html>
