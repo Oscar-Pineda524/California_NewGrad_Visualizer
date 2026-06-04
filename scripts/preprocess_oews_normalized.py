@@ -15,6 +15,7 @@ HOUSEHOLD_LOOKUP_PATH = PROJECT_ROOT / "Data" / "household_burden" / "california
 OUTPUT_PATH = DATA_ROOT / "oews_normalized.json"
 LATEST_OUTPUT_PATH = DATA_ROOT / "oews_latest.json"
 LATEST_COMPACT_OUTPUT_PATH = DATA_ROOT / "oews_latest_compact.json"
+FIVE_YEAR_COMPACT_OUTPUT_PATH = DATA_ROOT / "oews_groups_5yr_compact.json"
 LATEST_YEAR_COUNT = 5
 
 OEWS_REQUIRED_HEADERS = {
@@ -57,10 +58,15 @@ def main():
         json.dumps(to_compact_oews(latest_rows, latest_year), separators=(",", ":")),
         encoding="utf-8",
     )
+    FIVE_YEAR_COMPACT_OUTPUT_PATH.write_text(
+        json.dumps(to_compact_oews_trends(rows), separators=(",", ":")),
+        encoding="utf-8",
+    )
 
     print(f"Wrote {len(rows)} normalized OEWS rows to {OUTPUT_PATH.relative_to(PROJECT_ROOT)}")
     print(f"Wrote {len(latest_rows)} latest-year OEWS rows to {LATEST_OUTPUT_PATH.relative_to(PROJECT_ROOT)}")
     print(f"Wrote compact latest-year OEWS data to {LATEST_COMPACT_OUTPUT_PATH.relative_to(PROJECT_ROOT)}")
+    print(f"Wrote compact five-year OEWS trends to {FIVE_YEAR_COMPACT_OUTPUT_PATH.relative_to(PROJECT_ROOT)}")
 
 
 def to_compact_oews(rows, year):
@@ -86,6 +92,34 @@ def to_compact_oews(rows, year):
         "version": 1,
         "year": year,
         "columns": ["county_id", "soc_code", "employment", "mean_annual_wage"],
+        "groups": sorted(group_titles.items()),
+        "rows": compact_rows,
+    }
+
+
+def to_compact_oews_trends(rows):
+    group_titles = {}
+    compact_rows = []
+    years = sorted({row["year"] for row in rows})
+
+    for row in rows:
+        if row["occupation_level"] != "group":
+            continue
+
+        soc_code = row["soc_code"]
+        group_titles[soc_code] = row["occupation_title"]
+        compact_rows.append([
+            row["year"],
+            row["county_id"],
+            soc_code,
+            row["employment"],
+            row["mean_annual_wage"],
+        ])
+
+    return {
+        "version": 2,
+        "years": years,
+        "columns": ["year", "county_id", "soc_code", "employment", "mean_annual_wage"],
         "groups": sorted(group_titles.items()),
         "rows": compact_rows,
     }

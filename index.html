@@ -17,12 +17,23 @@
   </header>
 
   <main class="dashboard">
-    <section class="controls" aria-label="Dashboard controls">
-      <div class="control-card">
+    <section class="controls control-card" aria-label="Dashboard controls">
+      <div class="controls-copy">
+        <p class="eyebrow">Explore The Map</p>
+        <h2>Choose an occupation group</h2>
+        <p>County colors update to compare median rent with typical monthly income.</p>
+      </div>
+
+      <div class="control-field">
         <label for="occupation-group-select">Occupation group</label>
-        <select id="occupation-group-select">
+        <select id="occupation-group-select" disabled>
           <option value="">Loading occupation groups...</option>
         </select>
+      </div>
+
+      <div id="dashboard-status" class="dashboard-status is-loading" role="status" aria-live="polite">
+        <span class="loading-spinner" aria-hidden="true"></span>
+        <span class="status-text">Loading dashboard data...</span>
       </div>
     </section>
 
@@ -35,8 +46,12 @@
           </div>
         </div>
 
-        <div id="map-container">
+        <div id="map-container" aria-busy="true">
           <svg id="county-map" role="img" aria-label="Choropleth map of California counties"></svg>
+          <div id="map-loading" class="map-loading" role="status" aria-live="polite">
+            <span class="loading-spinner" aria-hidden="true"></span>
+            <span id="map-loading-text">Loading county and employment data...</span>
+          </div>
         </div>
 
         <div id="legend" aria-label="Affordability legend"></div>

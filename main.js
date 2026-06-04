@@ -17,6 +17,7 @@ const DATA_PATHS = {
   householdLookup: "Data/household_burden/california_counties_burdened_households_series_ids.csv",
   medianRent: "Data/median_gross_rent/2024MedianGrossRent.csv",
   oewsRoot: "Data/Industry_employmet&wages",
+  oewsFiveYearCompact: "Data/Industry_employmet&wages/oews_groups_5yr_compact.json",
   oewsLatestCompact: "Data/Industry_employmet&wages/oews_latest_compact.json",
   oewsLatest: "Data/Industry_employmet&wages/oews_latest.json",
   oewsNormalized: "Data/Industry_employmet&wages/oews_normalized.json"
@@ -224,6 +225,10 @@ const OEWS_REQUIRED_HEADERS = {
 
 const occupationGroupSelect = d3.select("#occupation-group-select");
 const detailPanel = d3.select("#detail-panel");
+const dashboardStatus = d3.select("#dashboard-status");
+const mapContainer = d3.select("#map-container");
+const mapLoading = d3.select("#map-loading");
+const mapLoadingText = d3.select("#map-loading-text");
 const svg = d3.select("#county-map")
   .attr("viewBox", `0 0 ${width} ${height}`)
   .attr("preserveAspectRatio", "xMidYMid meet");
@@ -234,6 +239,7 @@ const legend = d3.select("#legend");
 const formatDollars = d3.format("$,.0f");
 const formatPercent = d3.format(".0%");
 const formatNumber = d3.format(",");
+const formatOneDecimal = d3.format(".1f");
 
 const colorScale = d3.scaleThreshold()
   .domain([0.25, 0.30, 0.35, 0.40])
@@ -265,6 +271,7 @@ occupationGroupSelect.on("change", () => {
 });
 
 function refreshAffordabilityView() {
+  syncSelectedEmploymentTrends();
   updateMap();
   if (selectedCounty) {
     renderCountyDetails(selectedCounty);
@@ -272,8 +279,12 @@ function refreshAffordabilityView() {
 }
 
 async function initDashboard() {
+  occupationGroupSelect.property("disabled", true);
+  setDashboardStatus("loading", "Loading county, rent, and employment data...");
+
   try {
     const rawData = await loadData();
+    setDashboardStatus("loading", "Preparing county affordability metrics...");
     const cleanedData = cleanAndIndexData(rawData);
 
     joinedDataByCountyId = cleanedData.joinedDataByCountyId;
@@ -284,17 +295,18 @@ async function initDashboard() {
     console.log(`Prepared ${joinedDataByCountyId.size} joined counties and ${counties.length} California map features.`);
 
     updateOccupationGroupDropdown(cleanedData.availableOccupationGroups);
+    syncSelectedEmploymentTrends();
     drawMap();
+    setDashboardStatus("ready", "Dashboard ready");
   } catch (error) {
-    d3.select("#map-container")
-      .append("p")
-      .attr("class", "error-message")
-      .text("Data could not be loaded. Check file paths, run a local server, and inspect the console.");
+    setDashboardStatus("error", "Data could not be loaded. Check file paths and inspect the console.");
     console.error("Dashboard data loading error:", error);
   }
 }
 
 async function loadData() {
+  setDashboardStatus("loading", "Loading county shapes, rent, and household data...");
+
   const [
     countyTopology,
     householdBurden,
@@ -308,6 +320,7 @@ async function loadData() {
   ]);
 
   const householdCountyLookup = cleanHouseholdLookup(householdLookup);
+  setDashboardStatus("loading", "Loading five-year occupation group data...");
   const oewsRows = await loadNormalizedOewsRows(householdCountyLookup);
 
   console.log(`Loaded datasets: ${householdBurden.length} household rows, ${medianRent.length} rent rows, ${oewsRows.length} OEWS rows.`);
@@ -322,16 +335,23 @@ async function loadData() {
 }
 
 async function loadNormalizedOewsRows(householdCountyLookup) {
-  try {
-    const compactRows = await loadCompactOewsRows(DATA_PATHS.oewsLatestCompact, householdCountyLookup.countyNameByFips);
+  const compactPaths = [
+    DATA_PATHS.oewsFiveYearCompact,
+    DATA_PATHS.oewsLatestCompact
+  ];
 
-    if (compactRows.length) {
-      console.log(`Loaded ${compactRows.length} compact OEWS rows from ${DATA_PATHS.oewsLatestCompact}.`);
-      logOewsYearSummary(compactRows);
-      return compactRows;
+  for (const path of compactPaths) {
+    try {
+      const compactRows = await loadCompactOewsRows(path, householdCountyLookup.countyNameByFips);
+
+      if (compactRows.length) {
+        console.log(`Loaded ${compactRows.length} compact OEWS rows from ${path}.`);
+        logOewsYearSummary(compactRows);
+        return compactRows;
+      }
+    } catch (error) {
+      console.warn(`Compact OEWS JSON was not found: ${path}`, error);
     }
-  } catch (error) {
-    console.warn(`Compact OEWS JSON was not found: ${DATA_PATHS.oewsLatestCompact}`, error);
   }
 
   const preprocessedPaths = [
@@ -356,9 +376,25 @@ async function loadNormalizedOewsRows(householdCountyLookup) {
   }
 
   console.warn("Falling back to slower browser Excel parsing.");
+  setDashboardStatus("loading", "Parsing Excel workbooks in your browser. This may take a moment...");
   const oewsWorkbookPaths = getOewsWorkbookPaths();
   console.log("OEWS workbook paths loaded for fallback Excel parsing:", oewsWorkbookPaths);
   return loadOewsExcelWorkbooks(oewsWorkbookPaths, householdCountyLookup.countyIdByName);
+}
+
+function setDashboardStatus(state, message) {
+  dashboardStatus
+    .classed("is-loading", state === "loading")
+    .classed("is-ready", state === "ready")
+    .classed("is-error", state === "error")
+    .select(".status-text")
+    .text(message);
+
+  mapContainer.attr("aria-busy", state === "loading" ? "true" : "false");
+  mapLoading
+    .classed("is-hidden", state === "ready")
+    .classed("is-error", state === "error");
+  mapLoadingText.text(message);
 }
 
 async function loadCompactOewsRows(path, countyNameByFips) {
@@ -374,12 +410,16 @@ async function loadCompactOewsRows(path, countyNameByFips) {
 
 function expandCompactOewsRows(compact, countyNameByFips, sourceFile) {
   const groupTitleByCode = new Map(compact.groups);
+  const includesYear = compact.version >= 2;
 
-  return compact.rows.map(([countyId, socCode, employment, meanAnnualWage]) => {
+  return compact.rows.map((compactRow) => {
+    const [year, countyId, socCode, employment, meanAnnualWage] = includesYear
+      ? compactRow
+      : [compact.year, ...compactRow];
     const occupationTitle = groupTitleByCode.get(socCode) || socCode;
 
     return {
-      year: compact.year,
+      year,
       county: countyNameByFips.get(countyId) || "",
       county_id: countyId,
       soc_code: socCode,
@@ -643,6 +683,61 @@ function logOewsYearSummary(rows) {
   console.log("Normalized OEWS rows by year:", summary);
 }
 
+function buildEmploymentTrendsByCountyGroup(rows) {
+  const rowsByCountyGroup = d3.group(
+    rows,
+    (row) => row.county_id,
+    (row) => row.soc_code
+  );
+  const trendsByCountyGroup = new Map();
+
+  rowsByCountyGroup.forEach((rowsByGroup, countyId) => {
+    const countyTrends = new Map();
+
+    rowsByGroup.forEach((groupRows, groupCode) => {
+      const trend = groupRows
+        .map((row) => ({
+          year: row.year,
+          employment: row.employment,
+          wage: row.mean_annual_wage
+        }))
+        .sort((a, b) => d3.ascending(a.year, b.year));
+
+      countyTrends.set(groupCode, {
+        group_code: groupCode,
+        group_title: groupRows[0]?.occupation_title || groupCode,
+        employment_trend_5yr: trend,
+        ...getEmploymentTrendSummary(trend)
+      });
+    });
+
+    trendsByCountyGroup.set(countyId, countyTrends);
+  });
+
+  return trendsByCountyGroup;
+}
+
+function getEmploymentTrendSummary(trend) {
+  const validEmployment = trend.filter((point) => point.employment != null);
+  const earliest = validEmployment[0] || null;
+  const latest = validEmployment.at(-1) || null;
+  const employmentChange = validEmployment.length > 1
+    ? latest.employment - earliest.employment
+    : null;
+  const employmentChangePct = employmentChange != null && earliest.employment
+    ? employmentChange / earliest.employment
+    : null;
+
+  return {
+    latest_employment: latest?.employment ?? null,
+    employment_change_5yr: employmentChange,
+    employment_change_pct_5yr: employmentChangePct,
+    average_employment_5yr: validEmployment.length
+      ? d3.mean(validEmployment, (point) => point.employment)
+      : null
+  };
+}
+
 function getOewsWorkbookCounties(rows) {
   const countyRow = rows.find((row) => String(row[0] || "").startsWith("Counties:"));
 
@@ -669,6 +764,7 @@ function cleanAndIndexData(rawData) {
   latestOewsYear = d3.max(normalizedOewsRows, (row) => row.year);
   latestOewsRows = normalizedOewsRows.filter((row) => row.year === latestOewsYear);
   latestOewsRowsByCountySoc = indexOewsRowsByCountySoc(latestOewsRows);
+  const employmentTrendsByCountyGroup = buildEmploymentTrendsByCountyGroup(normalizedOewsRows);
 
   console.log(`Cleaned ${householdBurdenByCountyId.size} household burden counties and ${rentByCountyId.size} rent counties.`);
   console.log(`Using ${latestOewsRows.length} OEWS rows from ${latestOewsYear} for occupation affordability.`);
@@ -678,6 +774,7 @@ function cleanAndIndexData(rawData) {
     countyNameByFips: lookup.countyNameByFips,
     householdBurdenByCountyId,
     rentByCountyId,
+    employmentTrendsByCountyGroup,
     wagesByCountyIndustry: new Map(),
     employmentByCountyIndustry: new Map()
   });
@@ -807,6 +904,8 @@ function joinCountyDatasets(data) {
       county: countyName,
       householdBurden: null,
       rent: null,
+      employmentTrends: data.employmentTrendsByCountyGroup.get(countyId) || new Map(),
+      selectedEmploymentTrend: null,
       industries: new Map()
     });
   });
@@ -882,6 +981,7 @@ function drawMap() {
     .attr("d", path)
     .attr("tabindex", 0)
     .attr("role", "button")
+    .attr("aria-pressed", "false")
     .attr("aria-label", (county) => getCountyName(county))
     .on("mouseenter focus", function(event, county) {
       d3.select(this).classed("is-hovered", true);
@@ -894,28 +994,36 @@ function drawMap() {
       }
     })
     .on("click", function(event, county) {
-      selectedCounty = county;
-      mapGroup.selectAll(".county").classed("is-selected", false);
-      d3.select(this).classed("is-selected", true);
-      renderCountyDetails(county);
+      selectCounty(county, this);
     })
     .on("keydown", function(event, county) {
       if (event.key === "Enter" || event.key === " ") {
         event.preventDefault();
-        selectedCounty = county;
-        mapGroup.selectAll(".county").classed("is-selected", false);
-        d3.select(this).classed("is-selected", true);
-        renderCountyDetails(county);
+        selectCounty(county, this);
       }
     });
 
   updateMap();
 }
 
+function selectCounty(county, element) {
+  selectedCounty = county;
+  mapGroup.selectAll(".county")
+    .classed("is-selected", false)
+    .attr("aria-pressed", "false");
+  d3.select(element)
+    .classed("is-selected", true)
+    .attr("aria-pressed", "true")
+    .raise();
+  renderCountyDetails(county);
+}
+
 function updateMap() {
   mapGroup.selectAll(".county")
+    .interrupt()
     .transition()
-    .duration(350)
+    .duration(550)
+    .ease(d3.easeCubicOut)
     .attr("fill", (county) => {
       const ratio = getHousingCostRatio(county);
       return ratio == null ? "#d8d4c9" : colorScale(ratio);
@@ -941,62 +1049,183 @@ function drawLegend() {
 function renderCountyDetails(county) {
   const countyData = county.properties.affordabilityData;
   const occupationData = getSelectedOccupationData(county);
+  const employmentTrend = getSelectedEmploymentTrend(county);
   const selection = getOccupationSelection();
   const monthlyRent = getMonthlyRent(county);
   const typicalOccupationWage = getTypicalOccupationWage(county);
   const monthlyIncome = getMonthlyIncome(county);
   const ratio = getHousingCostRatio(county);
+  const householdBurden = countyData?.householdBurden?.burdenedHouseholdsPct;
+  const employmentChange = employmentTrend?.employment_change_pct_5yr;
 
   detailPanel.html(`
-    <p class="eyebrow">County Details</p>
-    <h2>${getCountyName(county)}</h2>
-    <dl>
-      <div>
-        <dt>County ID</dt>
-        <dd>${county.properties.county_id || "Missing"}</dd>
+    <div class="detail-panel-header">
+      <p class="eyebrow">County Details</p>
+      <h2>${getCountyName(county)}</h2>
+      <span class="selection-tag">${selection.label || "No occupation selected"}</span>
+    </div>
+    <div class="metric-grid">
+      ${getMetricCard(
+        "Housing cost ratio",
+        ratio == null ? "No match" : formatPercent(ratio),
+        getAffordabilityLabel(ratio),
+        true
+      )}
+      ${getMetricCard(
+        "Median gross rent",
+        monthlyRent == null ? "No match" : formatDollars(monthlyRent),
+        "per month"
+      )}
+      ${getMetricCard(
+        "Typical annual wage",
+        typicalOccupationWage == null ? "No match" : formatDollars(typicalOccupationWage),
+        "selected occupation group"
+      )}
+      ${getMetricCard(
+        "Latest employment",
+        occupationData?.employment == null ? "No match" : formatNumber(occupationData.employment),
+        "estimated jobs"
+      )}
+      ${getMetricCard(
+        "Five-year job change",
+        employmentChange == null ? "No trend" : formatSignedPercent(employmentChange),
+        employmentTrend?.employment_change_5yr == null
+          ? "employment trend unavailable"
+          : `${d3.format("+,")(employmentTrend.employment_change_5yr)} jobs`
+      )}
+      ${getMetricCard(
+        "Household burden",
+        householdBurden == null ? "No match" : `${formatOneDecimal(householdBurden)}%`,
+        "countywide measure"
+      )}
+    </div>
+    <div class="detail-meta">
+      <div class="detail-meta-row">
+        <span>Monthly occupation income</span>
+        <strong>${monthlyIncome == null ? "No match" : formatDollars(monthlyIncome)}</strong>
       </div>
-      <div>
-        <dt>Median gross rent</dt>
-        <dd>${monthlyRent == null ? "No match" : formatDollars(monthlyRent)}</dd>
+      <div class="detail-meta-row">
+        <span>Wage source</span>
+        <strong>${occupationData?.sourceLabel || "No match"}</strong>
       </div>
-      <div>
-        <dt>Selected occupation</dt>
-        <dd>${selection.label || "No occupation selected"}</dd>
+      <div class="detail-meta-row">
+        <span>County FIPS</span>
+        <strong>${county.properties.county_id || "Missing"}</strong>
       </div>
-      <div>
-        <dt>Typical annual occupation wage</dt>
-        <dd>${typicalOccupationWage == null ? "No match" : formatDollars(typicalOccupationWage)}</dd>
+    </div>
+    <section class="trend-chart-section" aria-labelledby="employment-trend-title">
+      <div class="trend-chart-heading">
+        <div>
+          <p class="eyebrow">Five-Year Trend</p>
+          <h3 id="employment-trend-title">Employment</h3>
+        </div>
+        <p>${employmentTrend?.employment_change_pct_5yr == null ? "" : formatSignedPercent(employmentTrend.employment_change_pct_5yr)}</p>
       </div>
-      <div>
-        <dt>Monthly occupation income</dt>
-        <dd>${monthlyIncome == null ? "No match" : formatDollars(monthlyIncome)}</dd>
-      </div>
-      <div>
-        <dt>Wage source</dt>
-        <dd>${occupationData?.sourceLabel || "No match"}</dd>
-      </div>
-      <div>
-        <dt>Housing cost ratio</dt>
-        <dd>${ratio == null ? "No match" : formatPercent(ratio)}</dd>
-      </div>
-      <div>
-        <dt>Affordability category</dt>
-        <dd>${getAffordabilityLabel(ratio)}</dd>
-      </div>
-      <div>
-        <dt>Household burden</dt>
-        <dd>${countyData?.householdBurden?.burdenedHouseholdsPct == null ? "No match" : `${countyData.householdBurden.burdenedHouseholdsPct}%`}</dd>
-      </div>
-      <div>
-        <dt>Employment</dt>
-        <dd>${occupationData?.employment == null ? "No match" : formatNumber(occupationData.employment)}</dd>
-      </div>
-    </dl>
+      <div id="employment-trend-chart"></div>
+    </section>
     <p class="panel-note">
       Formula: median_gross_rent divided by monthly occupation income, where
-      monthly occupation income = typical_industry_wage / 12.
+      monthly occupation income = typical occupation group wage / 12.
     </p>
   `);
+
+  drawEmploymentTrendChart(employmentTrend);
+}
+
+function getMetricCard(label, value, note, isPrimary = false) {
+  return `
+    <div class="metric-card${isPrimary ? " is-primary" : ""}">
+      <span class="metric-label">${label}</span>
+      <strong class="metric-value">${value}</strong>
+      <span class="metric-note">${note}</span>
+    </div>
+  `;
+}
+
+function drawEmploymentTrendChart(employmentTrend) {
+  const chartContainer = detailPanel.select("#employment-trend-chart");
+  const trend = employmentTrend?.employment_trend_5yr
+    ?.filter((point) => point.employment != null)
+    .sort((a, b) => d3.ascending(a.year, b.year)) || [];
+
+  if (trend.length < 2) {
+    chartContainer
+      .append("p")
+      .attr("class", "trend-chart-fallback")
+      .text("Five-year employment trend data is not available for this county and occupation group.");
+    return;
+  }
+
+  const chartWidth = 280;
+  const chartHeight = 180;
+  const margin = { top: 12, right: 12, bottom: 32, left: 52 };
+  const innerWidth = chartWidth - margin.left - margin.right;
+  const innerHeight = chartHeight - margin.top - margin.bottom;
+  const employmentExtent = d3.extent(trend, (point) => point.employment);
+  const employmentPadding = Math.max((employmentExtent[1] - employmentExtent[0]) * 0.15, employmentExtent[1] * 0.03, 1);
+
+  const xScale = d3.scalePoint()
+    .domain(trend.map((point) => point.year))
+    .range([0, innerWidth]);
+  const yScale = d3.scaleLinear()
+    .domain([
+      Math.max(0, employmentExtent[0] - employmentPadding),
+      employmentExtent[1] + employmentPadding
+    ])
+    .nice()
+    .range([innerHeight, 0]);
+
+  const svg = chartContainer
+    .append("svg")
+    .attr("class", "employment-trend-chart")
+    .attr("viewBox", `0 0 ${chartWidth} ${chartHeight}`)
+    .attr("role", "img")
+    .attr("aria-label", "Five-year employment trend line chart");
+  const chart = svg.append("g")
+    .attr("transform", `translate(${margin.left},${margin.top})`);
+
+  chart.append("g")
+    .attr("class", "trend-grid")
+    .call(d3.axisLeft(yScale).ticks(4).tickSize(-innerWidth).tickFormat(""));
+
+  chart.append("g")
+    .attr("class", "trend-axis")
+    .attr("transform", `translate(0,${innerHeight})`)
+    .call(d3.axisBottom(xScale).tickSizeOuter(0));
+
+  chart.append("g")
+    .attr("class", "trend-axis")
+    .call(d3.axisLeft(yScale).ticks(4).tickFormat(d3.format("~s")).tickSizeOuter(0));
+
+  chart.append("path")
+    .datum(trend)
+    .attr("class", "trend-line")
+    .attr("d", d3.line()
+      .x((point) => xScale(point.year))
+      .y((point) => yScale(point.employment)));
+
+  chart.selectAll(".trend-point")
+    .data(trend)
+    .join("circle")
+    .attr("class", "trend-point")
+    .attr("cx", (point) => xScale(point.year))
+    .attr("cy", (point) => yScale(point.employment))
+    .attr("r", 3.5)
+    .append("title")
+    .text((point) => `${point.year}: ${formatNumber(point.employment)} jobs`);
+
+  chart.append("text")
+    .attr("class", "trend-axis-label")
+    .attr("transform", "rotate(-90)")
+    .attr("x", -innerHeight / 2)
+    .attr("y", -42)
+    .attr("text-anchor", "middle")
+    .text("Jobs");
+}
+
+function formatSignedPercent(value) {
+  if (value == null) return "";
+  return d3.format("+.1%")(value);
 }
 
 function updateOccupationGroupDropdown(groups) {
@@ -1018,7 +1247,7 @@ function updateOccupationGroupDropdown(groups) {
     .data(groups)
     .join("option")
     .attr("value", (group) => group.groupCode)
-    .text((group) => `${group.groupCode} ${group.groupTitle}`);
+    .text((group) => group.groupTitle);
 }
 
 function getMonthlyRent(county) {
@@ -1065,6 +1294,18 @@ function getSelectedOccupationData(county) {
   return null;
 }
 
+function syncSelectedEmploymentTrends() {
+  const groupCode = occupationGroupSelect.property("value");
+
+  joinedDataByCountyId.forEach((countyData) => {
+    countyData.selectedEmploymentTrend = countyData.employmentTrends.get(groupCode) || null;
+  });
+}
+
+function getSelectedEmploymentTrend(county) {
+  return county.properties.affordabilityData?.selectedEmploymentTrend ?? null;
+}
+
 function getOccupationSelection() {
   const groupCode = occupationGroupSelect.property("value");
   const groupLabel = getSelectedOccupationGroupLabel(groupCode);
@@ -1093,6 +1334,8 @@ function getOrCreateCounty(joined, countyId, countyName) {
       county: countyName || "Unknown County",
       householdBurden: null,
       rent: null,
+      employmentTrends: new Map(),
+      selectedEmploymentTrend: null,
       industries: new Map()
     });
   }
