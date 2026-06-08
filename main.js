@@ -1157,8 +1157,8 @@ function drawEmploymentTrendChart(employmentTrend) {
   }
 
   const chartWidth = 280;
-  const chartHeight = 180;
-  const margin = { top: 12, right: 12, bottom: 32, left: 52 };
+  const chartHeight = 120;
+  const margin = { top: 8, right: 12, bottom: 26, left: 44 };
   const innerWidth = chartWidth - margin.left - margin.right;
   const innerHeight = chartHeight - margin.top - margin.bottom;
   const employmentExtent = d3.extent(trend, (point) => point.employment);
