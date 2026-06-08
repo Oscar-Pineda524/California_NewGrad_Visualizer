@@ -2,7 +2,7 @@
 
 Interactive D3 dashboard that maps how affordable each California county is for a new graduate, based on median gross rent as a share of typical monthly occupation income.
 
-ECS 163 final project, Team 27. Oscar Pineda, Brian Le, Ayush Lenka, Sai Mannava.
+ECS 163 final project, Team 27. Oscar Pineda, Brian Le, Ayush Lenka, and Sai Mannava.
 
 ## What's in the repo
 
@@ -17,9 +17,9 @@ ECS 163 final project, Team 27. Oscar Pineda, Brian Le, Ayush Lenka, Sai Mannava
 
 ### Data folders
 
-- `Data/Industry_employmet&wages/` — California EDD OEWS occupational wage data, 2020-2024. Raw `.xlsx` workbooks per California region plus four preprocessed JSON outputs.
-- `Data/household_burden/` — Burdened-households series pulled from FRED (Federal Reserve Bank of St. Louis), 2026-06-03.
-- `Data/median_gross_rent/` — Median gross rent by county, 2020-2024, from US Census ACS.
+- `Data/Industry_employmet&wages/` — California OEWS regional workbooks for the 22 major SOC occupation groups. Raw `.xlsx` per region plus four preprocessed JSON outputs.
+- `Data/household_burden/` — Burdened-households series from FRED (sourced from the US Census ACS 5-Year). The 30% rent-to-income threshold defines a burdened household.
+- `Data/median_gross_rent/` — Median gross rent by county, from US Census ACS 5-Year table B25064 (2024).
 
 ## Install
 
@@ -90,10 +90,10 @@ python3 scripts/convert_legacy_oews_xls.py
 
 | Dataset | Source |
 |---------|--------|
-| OEWS occupation wages | California EDD Labor Market Information ([labormarketinfo.edd.ca.gov](https://labormarketinfo.edd.ca.gov)) |
-| Median gross rent | US Census ACS 5-Year ([data.census.gov](https://data.census.gov)) |
-| Burdened households | FRED, Federal Reserve Bank of St. Louis ([data list 10679](https://fredaccount.stlouisfed.org/public/datalist/10679)) |
-| California county geometry | US Atlas TopoJSON via jsdelivr ([topojson/us-atlas](https://github.com/topojson/us-atlas)) |
+| OEWS occupation wages and employment | California EDD Labor Market Information ([labormarketinfo.edd.ca.gov/data/wages.html](https://labormarketinfo.edd.ca.gov/data/wages.html)) |
+| Median gross rent (B25064) | US Census ACS 5-Year, 2024 ([data.census.gov](https://data.census.gov/table?q=B25064)) |
+| Burdened households (5-year estimate) | FRED, Federal Reserve Bank of St. Louis ([data list 10679](https://fredaccount.stlouisfed.org/public/datalist/10679)) |
+| California county geometry | us-atlas TopoJSON, FIPS prefix 06 ([topojson/us-atlas](https://github.com/topojson/us-atlas)) |
 
 ## Browser support
 
@@ -103,7 +103,8 @@ Tested on Chrome 120+ and Safari 17+. JavaScript must be on.
 
 | Member | Owns |
 |--------|------|
-| Oscar Pineda | Storytelling overlay, hook chart |
-| Brian Le | Choropleth, reactive controls |
-| Ayush Lenka | JSON build pipeline, county detail panel |
-| Sai Mannava | Data collection, industry pipeline |
+| Oscar Pineda | Data preparation, framing, storytelling direction |
+| Brian Le | Choropleth, visual encoding, transitions, interactive controls |
+| Ayush Lenka | Preprocessing and build pipeline, county detail views |
+
+Final writing, review, and presentation preparation were shared by the team.
