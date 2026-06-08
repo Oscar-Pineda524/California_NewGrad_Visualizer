@@ -1,16 +1,9 @@
-// California New Grad Affordability Dashboard
-// ------------------------------------------------------------
-// Data goal:
-// 1. Load household burden, wage, employment, rent, and California county shapes.
-// 2. Clean each row to a shared county_id, preferably 5-digit county FIPS.
-// 3. Join all datasets onto each county map feature.
-// 4. Warn in the console when a county cannot be matched.
+// Loads county shapes, wage, rent, and burden tables, joins everything on
+// county FIPS, and renders the choropleth + detail panel.
 
 const width = 760;
 const height = 760;
 
-// Change these paths if your folders or filenames are different.
-// Browser D3 loads CSV/JSON directly. SheetJS loads the local OEWS .xlsx files.
 const DATA_PATHS = {
   countyTopology: "https://cdn.jsdelivr.net/npm/us-atlas@3/counties-10m.json",
   householdBurden: "Data/household_burden/annual.csv",
@@ -23,8 +16,7 @@ const DATA_PATHS = {
   oewsNormalized: "Data/Industry_employmet&wages/oews_normalized.json"
 };
 
-// Browsers cannot list local folders, so this manifest tells D3 which OEWS
-// workbooks are available. These are the latest five local OEWS years.
+// Browsers can't enumerate folders, so the workbook list is hardcoded per year.
 const OEWS_WORKBOOKS_BY_YEAR = {
   2022: [
     "CA-OEWS-Anaheim-Santa Ana-Irvine MD-2022.xlsx",
@@ -196,7 +188,6 @@ const OEWS_WORKBOOKS_BY_YEAR = {
   ]
 };
 
-// Update these column names if the CSV lookup/rent files change.
 const COLUMN_NAMES = {
   householdDate: "observation_date",
   householdLookupCounty: "county",
@@ -206,7 +197,7 @@ const COLUMN_NAMES = {
   rentValue: "B25064_001E",
   wageCountyFips: "county_fips",
   wageCountyName: "county",
-  // OEWS files are occupation-based. The dashboard uses this as the dropdown category.
+  // OEWS is occupation-keyed; this drives the dropdown.
   wageIndustry: "industry",
   wageAnnual: "annual_mean_wage",
   employmentCountyFips: "county_fips",
@@ -215,7 +206,6 @@ const COLUMN_NAMES = {
   employmentCount: "employment"
 };
 
-// Update these labels if a future OEWS workbook renames its header columns.
 const OEWS_REQUIRED_HEADERS = {
   soc: "SOC Code",
   occupation: "Occupational Title",
@@ -843,7 +833,7 @@ function cleanMedianRent(rows, countyIdByName) {
   const rentByCountyId = new Map();
 
   rows.forEach((row) => {
-    // Census files often include a second metadata row where GEO_ID is "Geography".
+    // Skip the Census metadata row where GEO_ID is the literal "Geography".
     if (row[COLUMN_NAMES.rentGeoId] === "Geography") return;
 
     const countyName = cleanCountyName(row[COLUMN_NAMES.rentCountyName]);
@@ -875,7 +865,6 @@ function cleanIndustryRows(rows, config) {
     const industry = cleanIndustryName(row[config.industryColumn]);
     const value = parseNumber(row[config.valueColumn]);
 
-    // Change config.* column names above if you see these warnings.
     if (!countyId || !industry) {
       console.warn(`Industry row failed to match for ${config.valueName}:`, row);
       return;
@@ -1384,7 +1373,6 @@ function getFeatureCountyId(feature) {
     return cleanCountyId(feature.id);
   }
 
-  // Add your GeoJSON's exact county FIPS property here if it uses another name.
   if (props.STATEFP && props.COUNTYFP) {
     return cleanCountyId(`${props.STATEFP}${props.COUNTYFP}`);
   }
@@ -1398,8 +1386,8 @@ function getFeatureCountyId(feature) {
 
   if (directFips) return directFips;
 
-  // County GeoJSON files often use GEOID = 06001. Place/city GeoJSON files can
-  // use 7-digit place GEOIDs, so only trust GEOID when it is exactly 5 digits.
+  // GEOID = 5 digits for counties (06001) but 7 for place/city files,
+  // so only trust it when it's exactly 5.
   const geoIdFips = cleanStrictCountyFips(props.GEOID || props.geoid);
   if (geoIdFips) return geoIdFips;
 
@@ -1410,7 +1398,6 @@ function getFeatureCountyId(feature) {
 function getFeatureCountyName(feature) {
   const props = feature.properties || {};
 
-  // Add your GeoJSON's exact county name property here if it uses another name.
   return cleanCountyName(
     props.county
       || props.COUNTY
@@ -1433,7 +1420,7 @@ function cleanCountyId(value) {
 
   const digits = String(value).replace(/\D/g, "");
 
-  // Census GEO_ID values often look like 0500000US06001.
+  // Census GEO_ID looks like 0500000US06001; the last 5 digits are the county FIPS.
   if (digits.length >= 5) {
     return digits.slice(-5);
   }
