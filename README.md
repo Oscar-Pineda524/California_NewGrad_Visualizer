@@ -2,7 +2,7 @@
 
 Interactive D3 dashboard that maps how affordable each California county is for a new graduate, based on median gross rent as a share of typical monthly occupation income.
 
-ECS 163 final project, Team 27. Oscar Pineda, Brian Le, Ayush Lenka, and Sai Mannava.
+ECS 163 final project, Team 27. Oscar Pineda, Brian Le, Ayush Lenka.
 
 ## What's in the repo
 
